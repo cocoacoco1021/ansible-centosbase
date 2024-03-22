@@ -1,0 +1,50 @@
+---
+# tasks file for nginx
+- name: install nginx
+  yum:
+    name:
+      - nginx
+    lock_timeout: 180
+
+- name: put upstream.conf
+  template:
+    src: "../templates/{{ item }}"
+    dest: /etc/nginx/conf.d/
+    owner: root
+    group: root
+    mode: 0644
+  with_items:
+    - upstream.conf
+    #- alb_backend.conf 
+
+- name: change worker_connections
+  lineinfile:
+    dest: "/etc/nginx/nginx.conf"
+    state: present
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    backup: yes
+  with_items:
+    - { regexp: "worker_connections 1024;" ,line: "worker_connections 4096;" }
+
+- name: change worker_rlimit_nofile
+  lineinfile:
+    dest: "/etc/nginx/nginx.conf"
+    state: present
+    insertafter: "^worker_processes auto;"
+    line: "worker_rlimit_nofile 4096;"
+
+- name: change nginx_limit
+  template:
+    src: "../templates/limits.conf"
+    dest: "/etc/systemd/system/nginx.service.d/"
+    owner: root
+    group: root
+    mode: 644  
+
+- name: start nginx
+  systemd:
+    name: nginx
+    state: started
+    enabled: yes 
+

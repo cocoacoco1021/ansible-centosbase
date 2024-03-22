@@ -1,0 +1,12 @@
+<VirtualHost *:80>
+   ServerAdmin {{ ServerAdmin }}
+   ServerName {{ item.domain }}
+   DocumentRoot "/var/www/vhosts/{{ item.domain }}/public_html"
+   DirectoryIndex index.php index.html index.xml
+   <Directory /var/www/vhosts/{{ item.domain }}/public_html >
+           Options FollowSymLinks
+           AllowOverride all
+   </Directory>
+   CustomLog "/var/log/httpd/{{ item.domain }}-access_log" combined
+   ErrorLog "/var/log/httpd/{{ item.domain }}-error_log"
+</VirtualHost>

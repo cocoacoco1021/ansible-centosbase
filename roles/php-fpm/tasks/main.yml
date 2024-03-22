@@ -1,0 +1,90 @@
+---
+# php-modelsインストール
+# リポジトリ追加
+- name: install epel and remi repository
+  yum:
+    name:
+      - https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+      - http://rpms.famillecollet.com/enterprise/remi-release-7.rpm
+
+# amzn2-core の優先順位を下げる
+- name: amzn2-core.repo priority down
+  replace:
+    path: /etc/yum.repos.d/amzn2-core.repo
+    regexp: 'priority=10'
+    replace: 'priority=99'
+    backup: yes
+  when:
+    - ansible_facts['distribution'] == "Amazon"
+    - ansible_facts['distribution_major_version'] == "2"
+
+# phpのインストール
+- name: install php-module
+  yum:
+    name="{{ item }}"
+    enablerepo="remi-php{{ php_var | default('74', true) }}"
+    state=present
+  with_items:
+    - "{{ php_modules | default('php-fpm', true) }}"
+
+# php.ini変更
+- name: change php.ini
+  lineinfile:
+    dest="/etc/php.ini"
+    regexp="{{ item.regexp }}"
+    line="{{ item.line }}"
+  with_items:
+    - { regexp: ";date.timezone*" ,line: "date.timezone = Asia/Tokyo" }
+    - { regexp: "expose_php = On" ,line: "expose_php = Off" }
+    - { regexp: "post_max_size = 8M" ,line: "post_max_size = 128M" }
+    - { regexp: "upload_max_filesize = 2M" ,line: "upload_max_filesize = 128M" }
+
+# php-fpmファイルの設置
+- name: deploy web.conf 
+  template:
+    src: ../templates/web.conf
+    dest: /etc/php-fpm.d/web.conf
+    owner: root
+    group: root
+    mode: 0644
+    backup: yes 
+
+# デフォルトファイルのコメントアウト
+- name: check original www.conf
+  stat:
+    path: /etc/php-fpm.d/www.conf
+  register: www_check
+
+- name: change www.conf
+  shell: mv /etc/php-fpm.d/www.conf /etc/php-fpm.d/www.conf.org
+  when: www_check.stat.exists
+
+# ディレクトリの権限を調整
+- name: change permission
+  file:
+    path: /var/lib/php/{{ item }}
+    owner: root
+    group: "{{ webuser | default('nginx', true) }}"
+    mode: 0770
+  with_items:
+    - opcache
+    - session
+    - wsdlcache
+
+# php-fpmの起動
+- name: start php-fpm
+  systemd:
+    name: php-fpm
+    state: started
+    enabled: yes
+
+# amzn2-core の優先順位を戻す
+- name: amzn2-core.repo priority up
+  replace:
+    path: /etc/yum.repos.d/amzn2-core.repo
+    regexp: 'priority=99'
+    replace: 'priority=10'
+    backup: yes
+  when:
+    - ansible_facts['distribution'] == "Amazon"
+    - ansible_facts['distribution_major_version'] == "2"

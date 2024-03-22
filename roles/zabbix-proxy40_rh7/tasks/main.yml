@@ -1,0 +1,58 @@
+---
+# zabbix-proxy導入
+- name: zabbix-repo_add
+  yum:
+    #name: http://repo.zabbix.com/zabbix/3.4/rhel/7/x86_64/zabbix-release-3.4-2.el7.noarch.rpm
+    name: http://repo.zabbix.com/zabbix/4.0/rhel/7/x86_64/zabbix-release-4.0-2.el7.noarch.rpm
+    state: present
+
+- name: zabbix-proxy_install
+  yum:
+    name:
+      - zabbix-proxy-sqlite3
+      #- zabbix-proxy
+    enablerepo: zabbix
+    state: present
+
+- name: create sqlite3 dir
+  file:
+    path: /var/lib/sqlite3
+    state: directory
+    owner: zabbix
+    group: zabbix
+    mode: 0755
+
+- name: confirm zabbix.db
+  stat:
+    path: /var/lib/sqlite3/zabbix.db
+  register: result_zabbixdb
+
+- name: deploy db data
+  #shell: zcat /usr/share/doc/zabbix-proxy-sqlite3-4.0.21/schema.sql.gz | /bin/sqlite3 zabbix.db
+  shell: zcat /usr/share/doc/zabbix-proxy-sqlite3-*/schema.sql.gz | /bin/sqlite3 zabbix.db
+    chdir=/var/lib/sqlite3/
+  when: not result_zabbixdb.stat.exists
+
+- name: chown zabbix.db
+  shell: chown zabbix:zabbix zabbix.db
+    chdir=/var/lib/sqlite3/
+
+- name: zabbix-proxy.conf change
+  lineinfile:
+    dest: "/etc/zabbix/zabbix_proxy.conf"
+    state: present
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  with_items:
+    - { regexp: "Server=127.0.0.1" ,line: "Server=52.192.182.98" }
+    - { regexp: "DBName=zabbix_proxy" ,line: "DBName=/var/lib/sqlite3/zabbix.db" }
+    - { regexp: "Hostname=Zabbix proxy" ,line:  "Hostname={{ inventory_hostname }}" }
+
+#- name: remove zabbix-proxy-mysql
+#  yum:
+#    name:
+#      - zabbix-proxy-mysql
+#    state: absent
+
+#サービスの起動
+  notify: zabbix-proxy_start 

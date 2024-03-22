@@ -1,0 +1,55 @@
+---
+# tasks file for useradd
+- name: ex_user_add
+  user:
+    name: "{{ item.customer }}"
+    groups: wheel
+    password: "{{ item.customer_pass | password_hash('sha512') }}"
+    generate_ssh_key: yes
+  with_items:
+    - "{{ ex_user }}"
+    
+- name: rename id_rsa.pub -> authorized_keys
+  shell: "mv ~{{ item.customer }}/.ssh/{id_rsa.pub,authorized_keys}"
+  args:
+    creates: "~{{ item.customer }}/.ssh/authorized_keys"
+  with_items:
+    - "{{ ex_user }}"
+
+- name: download ssh-key
+  fetch:
+    src: "~{{ item.customer }}/.ssh/id_rsa"
+    dest: "{{ pkey_dir | default('/var/tmp', true) }}/{{ ansible_nodename }}/{{ item.customer }}.pem"
+    flat: yes
+  with_items:
+    - "{{ ex_user }}"
+
+#- name: mkdir_ssh
+#  file:
+#    path="/home/{{ item.customer }}/.ssh"
+#    state=directory
+#    owner="{{ item.customer }}"
+#    group="{{ item.customer }}"
+#    mode=0700
+#  with_items:
+#    - "{{ ex_user }}"
+
+#- name: user_sshkey
+#  copy:
+#    src="../../../key/{{ item.customer }}.pub"
+#    dest="/home/{{ item.customer }}/.ssh/authorized_keys"
+#    owner="{{ item.customer }}"
+#    group="{{ item.customer }}"
+#    mode=0600
+#  with_items:
+#    - "{{ ex_user }}"
+
+- name: sudoers_add
+  template:
+    src: "../templates/customer.j2"
+    dest: "/etc/sudoers.d/{{ item.customer }}"
+    owner: root
+    group: root
+    mode: 0600
+  with_items:
+    - "{{ ex_user }}"

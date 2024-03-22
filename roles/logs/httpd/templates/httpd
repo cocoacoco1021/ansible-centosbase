@@ -1,0 +1,13 @@
+/var/log/httpd/*log {
+    {{ interval_web | default('daily', true) }}
+    rotate {{ rotate_num_web | default('90', true) }}
+    compress
+    delaycompress
+    dateext
+    missingok
+    notifempty
+    sharedscripts
+    postrotate
+        /bin/systemctl reload httpd.service > /dev/null 2>/dev/null || true
+    endscript
+}

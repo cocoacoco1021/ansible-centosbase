@@ -1,0 +1,12 @@
+<VirtualHost *:80>
+   ServerAdmin info@beyondjapan.com
+   ServerName {{ inventory_hostname }}.byd-svr.info
+   DocumentRoot "/home/byd_ops/public_html"
+   DirectoryIndex index.php index.html index.xml
+   <Directory /home/byd_ops/public_html >
+           Options FollowSymLinks
+           AllowOverride all
+   </Directory>
+   CustomLog "/var/log/httpd/{{ inventory_hostname }}.byd-svr.info-access_log" combined
+   ErrorLog "/var/log/httpd/{{ inventory_hostname }}.byd-svr.info-error_log"
+</VirtualHost>

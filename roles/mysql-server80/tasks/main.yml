@@ -1,0 +1,67 @@
+---
+# tasks file for mysql-server80
+- name: install mysql80 repository
+  yum:
+    name: https://dev.mysql.com/get/mysql80-community-release-el7-5.noarch.rpm
+    state: present
+
+- name: install mysql
+  yum:
+    name:
+      - mysql-server
+      - expect
+    state: present
+
+- name: put my.cnf
+  template:
+    src: ../templates/my.cnf.j2
+    dest: /etc/my.cnf
+    owner: root
+    group: root
+    mode: 0644
+    backup: yes
+
+- name: mkdir /var/log/mysql/
+  file:
+    path: /var/log/mysql
+    state: directory
+    owner: mysql
+    group: mysql
+    mode: 0755
+
+- name: start mysql
+  systemd:
+    name: mysqld
+    state: started
+    enabled: yes
+
+- name: confirm check_file
+  stat: path=/usr/local/etc/mysql_stat.txt
+  register: result_mysql_exit
+
+- name: put mysql_secure_installation_script
+  template:
+    src: ../templates/mysql_secure_installation_script
+    dest: /tmp/mysql_secure_installation_script
+    owner: root
+    group: root
+    mode: 0755
+
+- name: exec mysql_secure_installation_script
+  shell: "/tmp/mysql_secure_installation_script"
+  when: not result_mysql_exit.stat.exists
+
+- name: create check_file
+  file:
+    path: /usr/local/etc/mysql_stat.txt
+    state: touch
+    mode: "u=rw,g=r,o=r"
+
+- name: change error-log location
+  lineinfile:
+    dest: /etc/my.cnf
+    state: present
+    backrefs: yes
+    regexp: '^log-error = /var/log/mysqld.log'
+    line: 'log-error = /var/log/mysql/mysqld.log'
+  notify: mysqld_restart

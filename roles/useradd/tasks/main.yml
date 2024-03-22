@@ -1,0 +1,39 @@
+---
+# tasks file for useradd
+- name: add ex_user
+  user:
+    name: "{{ item.customer }}"
+    groups: wheel
+    password: "{{ item.customer_pass | password_hash('sha512') }}"
+  with_items:
+    - "{{ ex_user }}"
+    
+- name: mkdir .ssh directory
+  file:
+    path: "/home/{{ item.customer }}/.ssh"
+    state: directory
+    owner: "{{ item.customer }}"
+    group: "{{ item.customer }}"
+    mode: 0700
+  with_items:
+    - "{{ ex_user }}"
+
+- name: create each authorized_keys
+  copy:
+    src: "{{ item.full_publickey_path | default('../../../key/default.pub', true) }}"
+    dest: "/home/{{ item.customer }}/.ssh/authorized_keys"
+    owner: "{{ item.customer }}"
+    group: "{{ item.customer }}"
+    mode: 0600
+  with_items:
+    - "{{ ex_user }}"
+
+- name: add sudoers
+  template:
+    src: "../templates/customer.j2"
+    dest: "/etc/sudoers.d/{{ item.customer }}"
+    owner: root
+    group: root
+    mode: 0600
+  with_items:
+    - "{{ ex_user }}"

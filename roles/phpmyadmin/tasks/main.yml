@@ -1,0 +1,50 @@
+---
+# tasks file for phpmyadmin
+- name: confirm phpmyadmin exist
+  stat: 
+    path: /home/byd_ops/public_html/_pma_
+  register: result
+
+- name: download phpmyadmin source
+  unarchive:
+    src: "{{ download_url | default('https://files.phpmyadmin.net/phpMyAdmin/5.1.0/phpMyAdmin-5.1.0-all-languages.zip', true) }}"
+    dest: /home/byd_ops/public_html/
+    remote_src: yes
+    owner: byd_ops
+    group: byd_ops
+  when: not result.stat.exists
+
+- name: rename phpmyadmin source to _pma_
+  shell: mv phpMyAdmin-5.1.0-all-languages _pma_
+    chdir=/home/byd_ops/public_html/
+  when: not result.stat.exists
+
+- name: put .htaccess for access restrictions
+  copy:
+    src: ../files/.htaccess
+    dest: /home/byd_ops/public_html/.htaccess
+    owner: byd_ops
+    group: byd_ops
+    mode: 0664 
+
+- name: mkdir tmplate dirctory
+  file:
+    path: /home/byd_ops/public_html/_pma_/tmp
+    state: directory
+    owner: byd_ops
+    group: byd_ops
+    mode: 0777
+
+- name: rename config.sample.inc.php to config.inc.php
+  shell: mv config.sample.inc.php config.inc.php
+    chdir=/home/byd_ops/public_html/_pma_
+  when: not result.stat.exists
+
+- name: change blowfish_secret
+  lineinfile:
+    dest: "/home/byd_ops/public_html/_pma_/config.inc.php"
+    state: present
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  with_items:
+    - { regexp: "blowfish_secret" ,line: "$cfg['blowfish_secret'] = 'rQ9bvDApnj33rQ9bvDApnj33rQ9bvDApnj33';" }

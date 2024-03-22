@@ -1,0 +1,8 @@
+- name: check certificate file exit
+  stat:
+    path: /etc/httpd/conf/server.csr
+  register: cert
+
+- name: exec certgen.sh for certificate
+  script: "../files/certgen.sh"
+  when: not cert.stat.exists

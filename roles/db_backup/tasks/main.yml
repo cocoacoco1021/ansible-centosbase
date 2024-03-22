@@ -1,0 +1,44 @@
+---
+# tasks file for db_backup
+- name: make_dir
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  with_items:
+    - "/usr/local/TOOLS/bin/"
+    - "/var/backup/"
+
+- name: unzip_db_back
+  unarchive:
+    src: ../files/db_backup.zip
+    dest: /usr/local/TOOLS/
+
+#- name: passwd_define
+#  blockinfile:
+#    dest: /usr/local/TOOLS/db_backup/etc/db_backup.conf
+#    insertafter: "^DBPASS='aaa'"
+#    content: DBPASS='{{ db_passwd }}'
+
+- name: passwd_define
+  template:
+    src: ../templates/db_backup.conf
+    dest: /usr/local/TOOLS/db_backup/etc/db_backup.conf
+    owner: root
+    group: root
+    mode: 0644
+    backup: yes
+
+- name: set_crontab
+  cron:
+    user: "{{ item.user }}"
+    name: "{{ item.name }}"
+    minute: "{{ item.minute }}"
+    hour: "{{ item.hour }}"
+    day: "{{ item.day }}"
+    job: "{{ item.job }}"
+    state: present
+  with_items:
+    - { user: 'root', name: 'db_backup', minute: 30, hour: 04, day: "*", job: '/usr/local/TOOLS/db_backup/bin/db_backup.sh' }

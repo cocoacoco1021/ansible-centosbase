@@ -1,0 +1,11 @@
+---
+# tasks file for logs/nginx
+- name: put nginx logrotate file
+  template:
+    src: ../templates/{{ item }}
+    dest: /etc/logrotate.d/
+    owner: root
+    group: root
+    mode: 0644
+  with_items:
+    - nginx

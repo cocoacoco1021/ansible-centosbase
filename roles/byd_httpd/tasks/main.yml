@@ -1,0 +1,38 @@
+---
+# tasks file for byd_httpd
+- name: apache-install
+  yum:
+    name:
+      - httpd
+      - mod_ssl
+    state: present
+
+# byd_ops設定
+- name: byd_ops-permission-change
+  file:
+    path: "/home/byd_ops/"
+    state: directory
+    mode: 0755
+
+- name: vhosts_byd_mkdir
+  file:
+    path: "/home/byd_ops/public_html"
+    state: directory
+    owner: byd_ops
+    group: byd_ops
+    mode: 0755
+
+- name: mod_defconf
+  blockinfile:
+    dest: /etc/httpd/conf/httpd.conf
+    insertafter: '^#ServerName www.example.com:80$'
+    content: 'ServerName {{ inventory_hostname }}:80'
+
+- name: virtualhost_byd_add
+  template:
+    src: "../templates/vhost_byd.j2"
+    dest: "/etc/httpd/conf.d/vhost.{{ inventory_hostname }}.byd-svr.info.conf"
+    owner: root
+    group: root
+    mode: 644
+  notify: httpd_start

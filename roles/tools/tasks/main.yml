@@ -1,0 +1,21 @@
+---
+# tasks file for tools
+- name: make_dir
+  file:
+    path: /usr/local/TOOLS/bin/
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: put_mymysql.sh
+  template:
+    src: "../files/{{ item }}"
+    dest: /usr/local/TOOLS/bin/
+    owner: root
+    group: root
+    mode: 0755
+  with_items:
+    - "mymysql.sh"
+    - "viewconf.sh"
+    - "swap_ListUp.sh"

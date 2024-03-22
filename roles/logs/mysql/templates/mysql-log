@@ -1,0 +1,18 @@
+/var/log/mysql/*.log
+{
+    notifempty
+    {{ interval_mysql | default('daily', true) }}
+    rotate {{ rotate_num_mysql | default('14', true) }}
+    dateext
+    missingok
+    compress
+    delaycompress
+    postrotate
+       # just if mysqld is really running
+       if test -x /usr/bin/mysqladmin && \
+          HOME=/var/log/mysql /usr/bin/mysqladmin ping &>/dev/null
+       then
+          HOME=/var/log/mysql /usr/bin/mysqladmin flush-logs
+       fi
+    endscript
+}

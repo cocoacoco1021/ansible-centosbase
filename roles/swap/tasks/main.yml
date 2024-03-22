@@ -1,0 +1,45 @@
+---
+# tasks file for swap
+
+# SWAPファイルのパスを定義
+- name: define_swapfilepath
+  set_fact:
+    swap_file_path: /swap.img
+
+# SWAP領域の作成
+- name: create_swap_zone
+  command: dd if=/dev/zero of={{ swap_file_path }} bs=1M count=2048
+  args:
+    creates: '{{ swap_file_path }}'
+
+# SWAPファイルの権限を600に変更
+- name: change_mod 600
+  file:
+    path: '{{ swap_file_path }}'
+    mode: '0600'
+
+# 変数定義
+- name: define_swapfile
+  command: file {{ swap_file_path }}
+  register: swap_file_test
+
+# SWAP作成
+- name: create_swap
+  command: mkswap {{ swap_file_path }}
+  when: swap_file_test.stdout.find('swap file') == -1
+
+# SWAPの有効化
+- name: enable_swap
+  command: swapon {{ swap_file_path }}
+  when: ansible_swaptotal_mb < 1
+
+# mount設定
+- name: mod_fstab 
+  mount:
+    name: swap
+    src: '{{ swap_file_path }}'
+    fstype: swap
+    opts: defaults
+    passno: '0'
+    dump: '0'
+    state: present

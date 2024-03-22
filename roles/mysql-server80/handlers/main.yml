@@ -1,0 +1,7 @@
+---
+# 起動
+- name: mysqld_restart
+  service:
+    name: mysqld
+    state: restarted
+    enabled: yes

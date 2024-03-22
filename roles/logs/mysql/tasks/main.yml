@@ -1,0 +1,43 @@
+---
+# tasks file for logs/mysql-slow
+- name: install MySQL-python
+  yum:
+    name: MySQL-python
+    state: present
+
+- name: create mysql logs user
+  mysql_user:
+    name: logs
+    host: localhost
+    password: "{{ mysqllogs_dbpass | default('dwRW2unMF&T', true) }}"
+    priv: "*.*:reload"
+    state: present
+    login_user: root
+    login_password: "{{ db_passwd }}"
+  ignore_errors: yes
+
+- name: create dir
+  file:
+    path: /var/log/mysql
+    state: directory
+    owner: mysql
+    group: mysql
+    mode: 0755
+
+- name: put my.cnf
+  template:
+    src: ../templates/.my.cnf
+    dest: /var/log/mysql/.my.cnf
+    owner: mysql
+    group: mysql
+    mode: 0644
+
+- name: put mysql-slow logrotate file
+  template:
+    src: ../templates/{{ item }}
+    dest: /etc/logrotate.d/
+    owner: root
+    group: root
+    mode: 0644
+  with_items:
+    - mysql-log

@@ -1,0 +1,45 @@
+---
+# php-modelsインストール
+# リポジトリ追加
+- name: install epel and remi repository
+  yum:
+    name:
+      - https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+      - http://rpms.famillecollet.com/enterprise/remi-release-7.rpm
+
+# amzn2-core の優先順位を下げる
+- name: amzn2-core.repo priority down
+  replace:
+    path: /etc/yum.repos.d/amzn2-core.repo
+    regexp: 'priority=10'
+    replace: 'priority=99'
+    backup: yes
+
+# php のインストール
+- name: install php-module
+  yum:
+    name="{{ item }}"
+    enablerepo="remi-php{{ php_var | default('74', true) }}"
+    state=present
+  with_items:
+    - "{{ php_modules | default('php', true) }}"
+
+# php.ini 変更
+- name: change php.ini
+  lineinfile:
+    dest="/etc/php.ini"
+    regexp="{{ item.regexp }}"
+    line="{{ item.line }}"
+  with_items:
+    - { regexp: ";date.timezone*" ,line: "date.timezone = Asia/Tokyo" }
+    - { regexp: "expose_php = On" ,line: "expose_php = Off" }
+    - { regexp: "post_max_size = 8M" ,line: "post_max_size = 128M" }
+    - { regexp: "upload_max_filesize = 2M" ,line: "upload_max_filesize = 128M" }
+
+# amzn2-core の優先順位を戻す
+- name: amzn2-core.repo priority up
+  replace:
+    path: /etc/yum.repos.d/amzn2-core.repo
+    regexp: 'priority=99'
+    replace: 'priority=10'
+    backup: yes

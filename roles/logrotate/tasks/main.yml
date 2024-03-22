@@ -1,0 +1,12 @@
+---
+# tasks file for logrotate
+- name: put logrotate file
+  template:
+    src: ../templates/{{ item }}
+    dest: /etc/logrotate.d/
+    owner: root
+    group: root
+    mode: 0644
+  with_items:
+    - httpd
+    - syslog

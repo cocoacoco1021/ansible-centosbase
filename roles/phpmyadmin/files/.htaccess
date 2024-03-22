@@ -1,0 +1,5 @@
+Require all denied
+Require ip 192.168.33.1
+Require ip 125.199.234.179
+Require ip 160.86.236.72
+Require ip 160.86.244.231

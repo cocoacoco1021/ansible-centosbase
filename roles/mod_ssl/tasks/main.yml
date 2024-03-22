@@ -1,0 +1,27 @@
+---
+# mod_sslインストール
+- name: install mod_ssl
+  yum:
+    name:
+      - mod_ssl
+    state: present
+
+- name: add virtualhost
+  template:
+    src: "../templates/vhost.j2"
+    dest: "/etc/httpd/conf.d/vhost.{{ item.domain }}-ssl.conf.tmp"
+    owner: root
+    group: root
+    mode: 644
+  with_items:
+    -  "{{ domain_name }}"
+
+- name: change cert
+  template:
+    src: ../templates/{{ item }}
+    dest: /etc/httpd/conf.d/
+    owner: root
+    group: root
+    mode: 0644
+  with_items:
+    - ssl.conf

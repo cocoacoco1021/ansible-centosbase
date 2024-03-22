@@ -1,0 +1,52 @@
+---
+## byd_ops
+# byd_opsユーザのパスワード
+byd_pass: Ap9GsUBb:lk
+
+## useradd
+# 作成するユーザ
+ex_user:
+  - { customer: 'testuser1' ,customer_pass: 'Kc=datum' ,full_publickey_path:  '../../../key/testuser1.pub'}
+  - { customer: 'testuser2' ,customer_pass: 'Kc=datum' }
+
+## httpd
+# ServerAdmin
+ServerAdmin: info@beyondjapan.com
+
+# 設定するバーチャルホスト
+domain_name:
+   - { domain: 'test.net' ,customer: 'testuser1' }
+   - { domain: 'dev.test.net' ,customer: 'testuser1' }
+
+# MaxClients
+maxclients: 256
+
+## php
+# インストールするPHPのバージョンとモジュール
+php_var: 73
+php_modules:
+  - "php"
+  - "php-pdo"
+  - "php-mbstring"
+  - "php-gd"
+  - "php-mysqlnd"
+  - "php-phpunit-PHPUnit"
+
+## mysql-server
+# MySQLのパラメータ
+innodb_buffer_pool_size: 8G 
+key_buffer_size: 2G
+
+# DBのパスワード
+db_passwd: W3mrzy4M:sgt
+
+# MySQL専用サーバであればコメントイン
+#dedicated: true
+
+## logrotate
+# ログローテート設定
+interval_web: daily
+rotate_num_web: 90
+
+interval_sys: weekly
+rotate_num_sys: 4

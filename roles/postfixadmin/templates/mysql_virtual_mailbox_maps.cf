@@ -1,0 +1,8 @@
+# mysql_virtual_mailbox_maps.cf
+user = postfix
+password = {{ postfix_password | default('I9Aa~r(/ad$%v', true) }}
+hosts = localhost
+dbname = postfix
+query           = SELECT maildir FROM mailbox WHERE username='%s' AND active = '1'
+#expansion_limit = 100
+

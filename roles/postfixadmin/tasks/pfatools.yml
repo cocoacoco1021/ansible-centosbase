@@ -1,0 +1,11 @@
+- name: put shell script tools
+  copy:
+    src: ../files/{{ item }}
+    dest: /usr/local/bin/
+    owner: root
+    group: root
+    mode: 0755
+    backup: yes
+  with_items:
+    - mail_add_prod.sh
+    - mail_delete_prod.sh

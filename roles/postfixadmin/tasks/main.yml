@@ -1,0 +1,29 @@
+---
+# tasks file for postfixadmin
+- include: ssl.yml
+- include: postfix.yml
+- include: dovecot.yml
+- include: postfixadmin.yml
+- include: mailuser.yml
+- include: pfatools.yml
+
+- name: put virtualhost file for postfixadmin
+  template:
+    src: ../templates/vhosts.j2
+    dest: /etc/httpd/conf.d/vhost.{{ mail_domain }}.conf
+    owner: root
+    group: root
+    mode: 0644
+
+- name: mkdir vhosts
+  file:
+    path: /var/www/vhosts/{{ mail_domain }}/public_html
+    state: directory
+    owner: root
+    group: root
+
+- name: restart httpd
+  service:
+    name: httpd
+    state: restarted
+    enabled: yes

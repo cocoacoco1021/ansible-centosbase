@@ -1,0 +1,7 @@
+---
+# handlers file for zabbix-proxy40_rh7
+- name: zabbix-proxy_start
+  service:
+    name: zabbix-proxy
+    state: started
+    enabled: yes

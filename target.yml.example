@@ -1,0 +1,25 @@
+#####################################
+##              target             ##
+#####################################
+- name: apply target configuration to target nodes
+  hosts: target
+  remote_user: vagrant
+  become: yes
+  roles:
+    - common
+    - byd_ops
+    - useradd
+    - httpd
+    - byd_httpd
+    #- php
+    - php_amazonlinux
+    - mysql-server57
+    - db_backup
+    - tools
+    - vsftpd
+    #- zabbix-agent_rh7
+    - zabbix-agent40_rh7
+    - zabbix-proxy40_rh7
+    - swap
+    - phpmyadmin
+    - logrotate

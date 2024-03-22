@@ -1,0 +1,28 @@
+---
+# tasks file for vsftpd
+- name: install vsftpd
+  yum:
+    name: vsftpd
+    state: present
+
+- name: put vsftpd.conf
+  template:
+    src: ../templates/vsftpd.conf
+    dest: /etc/vsftpd/vsftpd.conf
+    owner: root
+    group: root
+    mode: 0600
+    backup: yes
+  notify: vsftpd_start
+
+- name: print ansible variables
+  debug:
+    var: '{{ item }}'
+  with_items:
+    - ansible_default_ipv4.address
+
+- name: modify vsftpd.conf
+  blockinfile:
+    dest: /etc/vsftpd/vsftpd.conf
+    insertafter: '^pasv_address='
+    content: pasv_address={{ ansible_default_ipv4.address }}

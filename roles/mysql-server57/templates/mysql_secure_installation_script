@@ -1,0 +1,29 @@
+#!/bin/bash
+
+
+# 初期パスワードを取得
+Int_Passwd=$(grep "A temporary password is generated for root@localhost:" /var/log/mysqld.log | awk '{ print $11}')
+
+# パスワード指定
+MysqlRootPasswd="{{ db_passwd }}"
+
+expect -c '
+    set timeout 10;
+    spawn mysql_secure_installation;
+    expect "Enter password for user root:";
+    send -- "'"${Int_Passwd}"'\n";
+    expect "New password:";
+    send -- "'"${MysqlRootPasswd}"'\n";
+    expect "Re-enter new password:";
+    send -- "'"${MysqlRootPasswd}"'\n";
+    expect "Change the password for root ?";
+    send "n\n";
+    expect "Remove anonymous users?";
+    send "y\n";
+    expect "Disallow root login remotely?";
+    send "y\n";
+    expect "Remove test database and access to it?";
+    send "y\n";
+    expect "Reload privilege tables now?";
+    send "y\n";
+    interact;'

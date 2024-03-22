@@ -1,0 +1,5 @@
+driver = mysql
+default_pass_scheme = MD5
+connect = dbname=postfix user=postfix host=/var/lib/mysql/mysql.sock password={{ postfix_password | default('I9Aa~r(/ad$%v', true) }}
+password_query = SELECT password FROM mailbox WHERE username = '%u' AND active = '1'
+user_query = SELECT concat('/var/vmail/', maildir) as home, 1550 as uid, 12 as gid FROM mailbox WHERE username = '%u' AND active = '1'

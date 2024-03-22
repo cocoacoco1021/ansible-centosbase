@@ -1,0 +1,43 @@
+---
+- name: mkdir /etc/postfix/sql
+  file:
+    path: "/etc/postfix/sql"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: put postfix configuration file
+  template:
+    src: ../templates/{{ item }}
+    dest: /etc/postfix/
+    owner: root
+    group: root
+    mode: 0644
+    backup: yes
+  with_items:
+    - "main.cf"
+    - "master.cf"
+
+- name: put postfixadmin configuration file
+  template:
+    src: ../templates/{{ item }}
+    dest: /etc/postfix/sql/
+    owner: root
+    group: root
+    mode: 0644
+    backup: yes
+  with_items:
+    - "mysql_virtual_alias_domain_catchall_maps.cf"
+    - "mysql_virtual_alias_domain_mailbox_maps.cf"
+    - "mysql_virtual_alias_domain_maps.cf"
+    - "mysql_virtual_alias_maps.cf"
+    - "mysql_virtual_domains_maps.cf"
+    - "mysql_virtual_mailbox_limit_maps.cf"
+    - "mysql_virtual_mailbox_maps.cf"
+
+- name: restart postfix
+  service:
+    name: postfix
+    state: restarted
+    enabled: yes

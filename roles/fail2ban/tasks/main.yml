@@ -1,0 +1,90 @@
+---
+# tasks file for fail2ban
+- name: install fail2ban and firewalld
+  yum:
+    name:
+      - fail2ban
+      - firewalld
+    state: present
+
+- name: make fail2ban log directory
+  file:
+    path: /var/log/fail2ban
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: put fail2ban.conf
+  template:
+    src: ../templates/fail2ban.conf
+    dest: /etc/fail2ban/fail2ban.conf
+    owner: root
+    group: root
+    mode: 0644
+    backup: yes
+
+- name: start fail2ban
+  service:
+    name: fail2ban
+    state: started
+    enabled: yes
+
+- name: put jail.local
+  template:
+    src: ../templates/jail.local
+    dest: /etc/fail2ban/jail.d/jail.local
+    owner: root
+    group: root
+    mode: 0644
+    backup: yes
+
+#- name: put firewalld conf 
+#  template:
+#    src: ../templates/public.xml
+#    dest: /etc/firewalld/zones/public.xml
+#    owner: root
+#    group: root
+#    mode: 0644
+#    backup: yes
+
+- name: start firewalld
+  service:
+    name: firewalld
+    state: started
+    enabled: yes
+
+- name: set service allow rules
+  firewalld:
+    zone: public
+    service: "{{ item }}"
+    permanent: yes
+    state: enabled
+  with_items:
+    - http
+    - smtp
+    - pop3
+    - imap
+    - https
+    - imaps
+    - pop3s
+    - smtps
+
+- name: set service allow port
+  firewalld:
+    zone: public
+    port: "{{ item }}"
+    permanent: yes
+    state: enabled
+  with_items:
+    - 10050/tcp
+    - 587/tcp
+
+- name: restart fail2ban
+  service:
+    name: "{{ item }}"
+    state: restarted
+  with_items:
+    - fail2ban
+    - firewalld
+    

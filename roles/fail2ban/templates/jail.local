@@ -1,0 +1,25 @@
+[DEFAULT]
+bantime = 3600 ; BANされたIPアドレスがアクセスを禁止される期間（秒）
+findtime = 300 ; BANの判定時間（秒）
+maxretry = 3 ; アクセス回数
+ignoreip = 127.0.0.0/8 10.0.0.0/8 192.168.0.0/16 172.16.0.0/16 {{ base_ip | default('160.86.244.231/32', true) }}
+
+# dovecot defaults to logging to the mail syslog facility
+# but can be set by syslog_facility in the dovecot configuration.
+[dovecot]
+enabled = true
+filter = dovecot
+port    = pop3,pop3s,imap,imaps,submission,465,sieve
+action  = iptables-multiport[name=dovecot-pop3imap, port="pop3,imap", protocol=tcp]
+          sendmail-whois[name=POP3, dest=root, sender=fail2ban@localhost]
+logpath = %(dovecot_log)s
+backend = %(dovecot_backend)s
+
+[recidive]
+enabled = true
+logpath = /var/log/fail2ban/fail2ban.log
+action  = %(action_mw)s
+
+findtime = 86400        ; 1 日で
+maxretry = 2            ; 2 回 BAN されたら
+bantime = 1209600       ; 2 週間 BAN する

@@ -1,0 +1,15 @@
+---
+# vars file for nginx
+# ネットワークCIDR
+#ip_cidr: 10.10.0.0/16
+
+# 設定するユーザ
+ex_user:
+  - { customer: 'test1_ops' ,customer_pass: 'dksjdod@d:dkdj7' }
+  - { customer: 'test2_ops' ,customer_pass: 'jdhdkdid:d@dld9k' }
+
+# 設定するバーチャルホスト
+domain_name:
+   - { domain: 'test1.com' ,customer: 'test1_ops' }
+   - { domain: 'test2.com' ,customer: 'test2_ops' }
+

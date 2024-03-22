@@ -1,0 +1,7 @@
+---
+# 起動
+- name: zabbix-agent_start
+  service:
+    name=zabbix-agent
+    state=started
+    enabled=yes

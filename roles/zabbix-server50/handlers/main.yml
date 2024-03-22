@@ -1,0 +1,18 @@
+---
+# handlers file for zabbix-server
+- name: zabbix-server_start
+  service:
+    name: "{{ item }}"
+    state: started
+    enabled: yes
+  with_items:
+    - zabbix-server
+    - zabbix-agent
+
+- name: httpd-server_restart
+  service:
+    name: "{{ item }}"
+    state: restarted
+    enabled: yes
+  with_items:
+    - httpd

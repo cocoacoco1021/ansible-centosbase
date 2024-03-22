@@ -1,0 +1,18 @@
+<VirtualHost *:80>
+   ServerAdmin {{ ServerAdmin }}
+   ServerName {{ mail_domain }}
+   DocumentRoot "/var/www/vhosts/{{ mail_domain }}/public_html"
+   DirectoryIndex index.php index.html index.xml
+   <Directory /var/www/vhosts/{{ mail_domain }}/public_html >
+           Options FollowSymLinks
+           AllowOverride all
+   </Directory>
+   Alias /postfixadmin /usr/share/postfixadmin/public
+   <Directory /usr/share/postfixadmin/public >
+           Options FollowSymLinks
+           AllowOverride all
+           Require all granted
+   </Directory>
+   CustomLog "/var/log/httpd/{{ mail_domain }}-access_log" combined
+   ErrorLog "/var/log/httpd/{{ mail_domain }}-error_log"
+</VirtualHost>

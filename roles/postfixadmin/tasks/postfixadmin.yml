@@ -1,0 +1,62 @@
+---
+- name: create database for postfixadmin
+  mysql_db:
+    name: postfix
+    state: present
+    login_user: root
+    login_password: "{{ db_passwd }}"
+
+- name: create postfix db user
+  mysql_user:
+    name: postfix
+    host: localhost
+    password: "{{ postfix_password | default('I9Aa~r(/ad$%v', true) }}"
+    priv: postfix.*:all
+    state: present
+    login_user: root
+    login_password: "{{ db_passwd }}"
+
+- name: confirm postfixadmin exist
+  stat: 
+    path: /usr/share/postfixadmin
+  register: result
+
+- name: download postfixadmin source
+  unarchive:
+    src: "{{ postfixadmin_download_url | default('https://github.com/postfixadmin/postfixadmin/archive/postfixadmin-3.2.4.tar.gz', true) }}"
+    dest: /usr/share/
+    remote_src: yes
+    owner: apache
+    group: apache
+  when: not result.stat.exists
+
+- name: rename postfixadmin source to postfixadmin
+  shell: mv postfixadmin-postfixadmin-3.2.4 postfixadmin
+    chdir=/usr/share/
+  when: not result.stat.exists
+
+- name: mkdir /usr/share/postfixadmin/templates_c
+  file:
+    path: /usr/share/postfixadmin/templates_c
+    state: directory
+    owner: apache
+    group: apache
+    mode: 0755
+
+- name: replace postfixadmin config files
+  template:
+    src: "../templates/{{ item }}"
+    dest: "/usr/share/postfixadmin/{{ item }}"
+    owner: apache
+    group: apache
+    mode: 0664
+    backup: yes
+  with_items:
+    - config.local.php
+    - config.inc.php
+
+- name: chmod postfixadmin
+  shell: find . -type f -print | xargs chmod 664
+  args:
+    chdir: /usr/share/postfixadmin/
+

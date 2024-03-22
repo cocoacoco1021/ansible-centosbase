@@ -1,0 +1,19 @@
+---
+- name: create vmailuser
+  user:
+    state: present
+    name: vmail
+    comment: "Virtual mailbox"
+    system: yes
+    group: mail
+    home: /var/vmail
+    shell: /sbin/nologin
+    uid: 1550
+
+- name: mkdir /var/vmail
+  file:
+    path: /var/vmail
+    state: directory
+    owner: vmail
+    group: mail
+    mode: 0770

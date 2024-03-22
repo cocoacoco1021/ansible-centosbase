@@ -1,0 +1,23 @@
+<VirtualHost *:443>
+   ServerAdmin {{ ServerAdmin }}
+   ServerName {{ item.domain }}
+   DocumentRoot "/var/www/vhosts/{{ item.domain }}/public_html"
+   DirectoryIndex index.php index.html index.xml
+   <Directory /var/www/vhosts/{{ item.domain }}/public_html >
+           Options FollowSymLinks
+           AllowOverride all
+   </Directory>
+   CustomLog "/var/log/httpd/{{ item.domain }}-ssl-access_log" combined
+   ErrorLog "/var/log/httpd/{{ item.domain }}-ssl-error_log"
+
+   SSLEngine on
+   SSLProtocol             all -SSLv2 -SSLv3 -TLSv1 -TLSv1.1
+   SSLCipherSuite          ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384
+   SSLHonorCipherOrder     off
+ 
+   #SSLOptions +StrictRequire
+ 
+   SSLCertificateFile /etc/certs/{{ item.domain }}/current/{{ item.domain }}.crt
+   SSLCertificateKeyFile /etc/certs/{{ item.domain }}/current/{{ item.domain }}.key
+   SSLCertificateChainFile /etc/certs/{{ item.domain }}/current/{{ item.domain }}.ca
+</VirtualHost>

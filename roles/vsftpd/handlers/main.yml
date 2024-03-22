@@ -1,0 +1,7 @@
+---
+# handlers file for vsftpd
+- name: vsftpd_start
+  systemd:
+    name: vsftpd
+    state: started
+    enabled: yes

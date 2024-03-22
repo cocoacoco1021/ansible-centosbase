@@ -1,0 +1,7 @@
+---
+# 起動
+- name: mysqld_start
+  service:
+    name: mysqld
+    state: started
+    enabled: yes

@@ -1,0 +1,10 @@
+---
+# インストールするPHPのバージョンとモジュール
+php_var: 74
+php_modules:
+  - "php"
+  - "php-pdo"
+  - "php-mbstring"
+  - "php-gd"
+  - "php-mysqlnd"
+  - "php-fpm"

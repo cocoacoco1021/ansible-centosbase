@@ -1,0 +1,37 @@
+---
+# zabbixエージェント導入
+- name: zabbix-repo_add
+  yum:
+    #name: http://repo.zabbix.com/zabbix/3.4/rhel/7/x86_64/zabbix-release-3.4-2.el7.noarch.rpm
+    name: http://repo.zabbix.com/zabbix/4.0/rhel/7/x86_64/zabbix-release-4.0-2.el7.noarch.rpm
+    state: present
+
+- name: zabbix-agent_install
+  yum:
+    name: zabbix-agent
+    enablerepo: zabbix
+    state: present
+
+- name: zabbix-agent_conf_change
+  lineinfile:
+    dest: "/etc/zabbix/zabbix_agentd.conf"
+    state: present
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  with_items:
+    - { regexp: "Server=127.0.0.1" ,line: "Server=52.192.182.98" }
+    - { regexp: "ServerActive=127.0.0.1" ,line: "ServerActive=52.192.182.98" }
+    - { regexp: "Hostname=Zabbix server" ,line:  "Hostname={{ inventory_hostname }}" }
+
+- name: zabbix-agent_conf_change_mem
+  blockinfile:
+    dest: /etc/zabbix/zabbix_agentd.conf
+    block: |
+       UserParameter=system.memory.sizetotal,free -b | grep "Mem" | awk '{print $2}'
+       UserParameter=system.memory.sizeused,free -b | grep "Mem" | awk '{print $3}'
+       UserParameter=system.memory.sizefree,free -b | grep "Mem" | awk '{print $4}'
+       UserParameter=system.memory.sizebuff_cache,free -b | grep "Mem" | awk '{print $6}'
+       UserParameter=system.memory.sizeavailable,free -b | grep "Mem" | awk '{print $7}'
+
+#全サービスの起動
+  notify: zabbix-agent_start 

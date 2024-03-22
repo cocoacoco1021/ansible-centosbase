@@ -1,0 +1,33 @@
+---
+# tasks file for certificate
+- name: mkdir /etc/certs
+  file:
+    path: /etc/certs
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: get this year
+  shell: date +%Y
+  register: thisyear
+
+- debug: var=thisyear
+
+- name: mkdir /etc/certs/domain
+  file:
+    path: /etc/certs/{{ item.domain }}/{{ thisyear.stdout }}
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  with_items:
+    -  "{{ domain_name }}"
+
+- name: symlink create certificate
+  file:
+    src: /etc/certs/{{ item.domain }}/{{ thisyear.stdout }}
+    dest: /etc/certs/{{ item.domain }}/current
+    state: link
+  with_items:
+    -  "{{ domain_name }}"

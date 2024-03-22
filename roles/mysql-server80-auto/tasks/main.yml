@@ -1,0 +1,90 @@
+---
+# tasks file for mysql-server80-auto
+- name: install mysql80 repository
+  yum:
+    name: https://dev.mysql.com/get/mysql80-community-release-el7-3.noarch.rpm
+    state: present
+
+- name: install mysql
+  yum:
+    name:
+      - mysql-server
+      - expect
+    state: present
+  notify: mysqld_start
+
+### 物理メモリ量を取得して変数に格納する処理
+- name: get memory capacity * 0.06
+  shell: free -b | grep "Mem:" | awk '{printf "%d\n", $2 * 0.06 }' | numfmt --to=iec
+  register: memcap06
+
+- debug: var=memcap06
+
+- name: get memory capacity * 0.25
+  shell: free -b | grep "Mem:" | awk '{printf "%d\n", $2 * 0.25 }' | numfmt --to=iec
+  register: memcap25
+
+- debug: var=memcap25
+
+- name: get memory capacity * 0.5
+  shell: free -b | grep "Mem:" | awk '{printf "%d\n", $2 * 0.5 }' | numfmt --to=iec
+  register: memcap50
+
+- debug: var=memcap50
+
+- name: get memory capacity * 0.7
+  shell: free -b | grep "Mem:" | awk '{printf "%d\n", $2 * 0.7 }' | numfmt --to=iec
+  register: memcap70
+
+- debug: var=memcap70
+### ここまで
+
+# dedicated が定義されていなければ実効
+- name: put my.cnf of share server
+  template:
+    src: ../templates/my.cnf.j2
+    dest: /etc/my.cnf
+    owner: root
+    group: root
+    mode: 0644
+    backup: yes
+  when: dedicated is undefined
+
+# dedicated が定義されていれば実効
+- name: put my.cnf of dedicated server
+  template:
+    src: ../templates/my.cnf.dedicated.j2
+    dest: /etc/my.cnf
+    owner: root
+    group: root
+    mode: 0644
+    backup: yes
+  when: dedicated is defined
+
+- name: restart mysql
+  systemd:
+    name: mysqld
+    state: started
+    enabled: yes
+
+- name: confirm check_file
+  stat: path=/usr/local/etc/mysql_stat.txt
+  register: result_mysql_exit
+
+- name: put mysql_secure_installation_script
+  template:
+    src: ../templates/mysql_secure_installation_script
+    dest: /tmp/mysql_secure_installation_script
+    owner: root
+    group: root
+    mode: 0755
+
+- name: exec mysql_secure_installation_script
+  shell: "/tmp/mysql_secure_installation_script"
+  when: not result_mysql_exit.stat.exists
+
+- name: create check_file
+  file:
+    path: /usr/local/etc/mysql_stat.txt
+    state: touch
+    mode: "u=rw,g=r,o=r"

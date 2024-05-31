@@ -1,9 +1,9 @@
-ansible-centosbase
+ansible-redhat-base
 =========
 
 ## これは何？
 
-- CentOSベースのOSへ実行可能な、汎用的なAnsible playbook です。
+- RedHat系OSへ実行可能な、汎用的なAnsible playbook です。
 
 ## ディレクトリ構成
 

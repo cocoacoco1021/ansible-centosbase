@@ -35,8 +35,8 @@ OSユーザの秘密鍵を設置します。
 ### 1.リポジトリをclone
 
 ```
-git clone http://gitlab.byd-svr.info/beyond-base/default-centos7.git
-cd default-CentOS7
+git clone https://github.com/cocoacoco1021/ansible-redhat-base.git
+cd ansible-redhat-base
 ```
 
 ### 2.要件に併せてroles以下のplaybookをインクルード
